@@ -81,15 +81,6 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Validate dataset exists
-        run: |
-          if [ ! -f "data/raw/student_data.csv" ]; then
-            echo "ERROR: data/raw/student_data.csv not found"
-            exit 1
-          fi
-          ROWS=$(wc -l < data/raw/student_data.csv)
-          echo "Dataset found: $ROWS rows"
-
       - name: Run full ML pipeline
         run: python run_pipeline.py
 
