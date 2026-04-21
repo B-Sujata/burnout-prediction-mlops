@@ -2,9 +2,9 @@ name: Burnout Prediction CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
 env:
@@ -13,7 +13,6 @@ env:
   REGISTRY: ghcr.io
 
 jobs:
-
   # ─────────────────────────────────────────────────────────────────
   # Job 1 — Lint
   # ─────────────────────────────────────────────────────────────────
@@ -190,7 +189,7 @@ jobs:
             test
 
       - name: Show image size
-        run: docker images ${{ env.IMAGE_NAME }}:ci-${{ github.sha }} --format "Image size: {{.Size}}"
+        run: docker images ${{ env.IMAGE_NAME }}:ci-${{ github.sha }}
 
   # ─────────────────────────────────────────────────────────────────
   # Job 5 — Docker Push to GHCR (main branch only)
@@ -229,7 +228,7 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ github.repository }}/${{ env.IMAGE_NAME }}
           tags: |
             type=sha,prefix=sha-
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=latest
 
       - name: Build and push image
         uses: docker/build-push-action@v5
