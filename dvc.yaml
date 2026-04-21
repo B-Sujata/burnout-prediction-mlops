@@ -1,14 +1,10 @@
 stages:
-
   data_ingestion:
     cmd: python -c "from src.data.ingest_data import ingest_data; ingest_data()"
     deps:
       - src/data/ingest_data.py
       - configs/config.yaml
       - data/raw/student_data.csv
-    outs:
-      - data/raw/student_data.csv:
-          cache: false      # already exists — just validate
 
   preprocess:
     cmd: python -c "from src.data.preprocess_data import preprocess_data; preprocess_data()"
@@ -17,8 +13,7 @@ stages:
       - data/raw/student_data.csv
       - configs/config.yaml
     outs:
-      - data/processed/processed_data.csv:
-          cache: true
+      - data/processed/processed_data.csv
 
   feature_engineering:
     cmd: python -c "from src.data.feature_engineering import engineer_features; engineer_features()"
@@ -30,8 +25,7 @@ stages:
       - params.yaml:
           - base.random_seed
     outs:
-      - data/processed/engineered_data.csv:
-          cache: true
+      - data/processed/engineered_data.csv
 
   train:
     cmd: python -c "from src.models.train_model import train_all_models; train_all_models()"
@@ -46,8 +40,7 @@ stages:
           - model.random_forest
           - model.gradient_boosting
     outs:
-      - models/:
-          cache: true
+      - models/
 
   evaluate:
     cmd: python -c "from src.models.evaluate_model import evaluate_model; evaluate_model()"
@@ -57,8 +50,7 @@ stages:
       - data/processed/engineered_data.csv
       - configs/config.yaml
     metrics:
-      - results/evaluation_report.json:
-          cache: false
+      - results/evaluation_report.json
 
   visualize:
     cmd: python -c "from src.visualization.visualize_results import visualize_results; visualize_results()"
@@ -66,16 +58,11 @@ stages:
       - src/visualization/visualize_results.py
       - data/processed/engineered_data.csv
       - models/
-      - results/metrics_summary.json
+      - results/evaluation_report.json
       - configs/config.yaml
     outs:
-      - results/burnout_distribution.png:
-          cache: false
-      - results/correlation_heatmap.png:
-          cache: false
-      - results/feature_importance.png:
-          cache: false
-      - results/model_comparison.png:
-          cache: false
-      - results/stress_level_validation.png:
-          cache: false
+      - results/burnout_distribution.png
+      - results/correlation_heatmap.png
+      - results/feature_importance.png
+      - results/model_comparison.png
+      - results/stress_level_validation.png

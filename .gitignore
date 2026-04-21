@@ -41,7 +41,7 @@ results/*.png
 .dvc/cache/
 .dvc/tmp/
 .dvc/plots/
-*.dvc
+!.dvc/
 
 # OS
 .DS_Store

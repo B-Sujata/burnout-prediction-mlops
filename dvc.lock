@@ -1,0 +1,62 @@
+schema: '2.0'
+stages:
+  data_ingestion:
+    cmd: python -c "from src.data.ingest_data import ingest_data; ingest_data()"
+    deps:
+    - path: configs/config.yaml
+      hash: md5
+      md5: 045eb8a5f899a4d1f543816ad123e673
+      size: 2693
+    - path: data/raw/student_data.csv
+      hash: md5
+      md5: 5cfd21529296fcb45db83f2598b2c124
+      size: 48717
+    - path: src/data/ingest_data.py
+      hash: md5
+      md5: c343ead699d80f41fe62002de8b7fa51
+      size: 2315
+  preprocess:
+    cmd: python -c "from src.data.preprocess_data import preprocess_data; 
+      preprocess_data()"
+    deps:
+    - path: configs/config.yaml
+      hash: md5
+      md5: 045eb8a5f899a4d1f543816ad123e673
+      size: 2693
+    - path: data/raw/student_data.csv
+      hash: md5
+      md5: 5cfd21529296fcb45db83f2598b2c124
+      size: 48717
+    - path: src/data/preprocess_data.py
+      hash: md5
+      md5: 6ead338de50f231786448d8b652ce817
+      size: 5359
+    outs:
+    - path: data/processed/processed_data.csv
+      hash: md5
+      md5: a0023374b9cdc7af877ae28b8e180fc0
+      size: 49818
+  feature_engineering:
+    cmd: python -c "from src.data.feature_engineering import engineer_features; 
+      engineer_features()"
+    deps:
+    - path: configs/config.yaml
+      hash: md5
+      md5: 045eb8a5f899a4d1f543816ad123e673
+      size: 2693
+    - path: data/processed/processed_data.csv
+      hash: md5
+      md5: a0023374b9cdc7af877ae28b8e180fc0
+      size: 49818
+    - path: src/data/feature_engineering.py
+      hash: md5
+      md5: 9fa3735ed959579310f3f3d30198f86a
+      size: 10700
+    params:
+      params.yaml:
+        base.random_seed: 42
+    outs:
+    - path: data/processed/engineered_data.csv
+      hash: md5
+      md5: 35875304e231160a0e599cc37b88965b
+      size: 148693
