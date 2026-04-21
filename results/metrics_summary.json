@@ -1,0 +1,31 @@
+{
+  "LinearRegression": {
+    "mae": 0.0025,
+    "rmse": 0.0029,
+    "r2": 1.0,
+    "cv_r2_mean": 1.0,
+    "cv_r2_std": 0.0
+  },
+  "RandomForest": {
+    "mae": 1.5813,
+    "rmse": 2.6019,
+    "r2": 0.9925,
+    "cv_r2_mean": 0.9923,
+    "cv_r2_std": 0.0022
+  },
+  "GradientBoosting": {
+    "mae": 1.1185,
+    "rmse": 2.0057,
+    "r2": 0.9955,
+    "cv_r2_mean": 0.9948,
+    "cv_r2_std": 0.0011
+  },
+  "XGBoost": {
+    "mae": 0.9962,
+    "rmse": 1.8058,
+    "r2": 0.9964,
+    "cv_r2_mean": 0.9949,
+    "cv_r2_std": 0.0019
+  },
+  "best_model": "LinearRegression"
+}

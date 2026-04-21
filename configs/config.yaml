@@ -1,0 +1,118 @@
+project:
+  name: "AI-Based Student Burnout Prediction System"
+  version: "2.0.0"
+  random_seed: 42
+  dataset: "StressLevelDataset (Kaggle) — 1100 students, 20 real features"
+
+paths:
+  raw_data: "data/raw/student_data.csv"
+  processed_data: "data/processed/processed_data.csv"
+  engineered_data: "data/processed/engineered_data.csv"
+  model_dir: "models/"
+  best_model: "models/burnout_model.pkl"
+  results_dir: "results/"
+  logs_dir: "logs/"
+  log_file: "logs/project.log"
+
+dataset:
+  n_samples: 1100
+  source: "Kaggle — rxnach/student-stress-factors-a-comprehensive-analysis"
+  target_col: "stress_level"
+  burnout_target: "burnout_score"
+  column_scales:
+    anxiety_level: 21
+    self_esteem: 30
+    mental_health_history: 1
+    depression: 27
+    headache: 5
+    blood_pressure: 3
+    sleep_quality: 5
+    breathing_problem: 5
+    noise_level: 5
+    living_conditions: 5
+    safety: 5
+    basic_needs: 5
+    academic_performance: 5
+    study_load: 5
+    teacher_student_relationship: 5
+    future_career_concerns: 5
+    social_support: 3
+    peer_pressure: 5
+    extracurricular_activities: 5
+    bullying: 5
+
+feature_weights:
+  emotional_strain:
+    anxiety_level: 0.30
+    depression: 0.35
+    mental_health_history: 0.15
+    self_esteem_inv: 0.20
+  physical_stress:
+    headache: 0.40
+    blood_pressure: 0.35
+    breathing_problem: 0.25
+  academic_pressure:
+    study_load: 0.30
+    future_career_concerns: 0.35
+    academic_performance_inv: 0.20
+    teacher_student_relationship_inv: 0.15
+  social_stress:
+    peer_pressure: 0.30
+    bullying: 0.30
+    noise_level: 0.15
+    living_conditions_inv: 0.10
+    safety_inv: 0.10
+    basic_needs_inv: 0.05
+  recovery_index:
+    sleep_quality: 0.40
+    social_support: 0.30
+    extracurricular_activities: 0.30
+
+burnout_formula:
+  emotional_strain_weight: 0.30
+  physical_stress_weight: 0.15
+  academic_pressure_weight: 0.25
+  social_stress_weight: 0.20
+  recovery_penalty_weight: 0.10
+
+preprocessing:
+  outlier_method: "iqr"
+  outlier_threshold: 2.0
+  scale_features: true
+  drop_original_target: false
+
+models:
+  linear_regression:
+    fit_intercept: true
+  random_forest:
+    n_estimators: 150
+    max_depth: 12
+    min_samples_split: 4
+    min_samples_leaf: 2
+    random_state: 42
+  gradient_boosting:
+    n_estimators: 200
+    learning_rate: 0.05
+    max_depth: 5
+    random_state: 42
+  xgboost:
+    n_estimators: 200
+    learning_rate: 0.05
+    max_depth: 6
+    subsample: 0.8
+    colsample_bytree: 0.8
+    random_state: 42
+
+training:
+  test_size: 0.2
+  cv_folds: 5
+  scoring_metric: "r2"
+
+mlflow:
+  experiment_name: "burnout_prediction_real_data"
+  tracking_uri: "mlruns"
+
+burnout_thresholds:
+  low: 33
+  moderate: 66
+  high: 100

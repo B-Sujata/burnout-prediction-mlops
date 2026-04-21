@@ -1,0 +1,124 @@
+version: "3.9"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Shared configuration applied to all services
+# ─────────────────────────────────────────────────────────────────────────────
+x-common: &common
+  image: burnout-prediction:latest
+  build:
+    context: .
+    dockerfile: Dockerfile
+    target: runtime
+  environment:
+    - PYTHONUNBUFFERED=1
+    - MPLBACKEND=Agg
+    - MLFLOW_TRACKING_URI=/app/mlruns
+  volumes:
+    # Mount data, models, results, logs so they persist on the host
+    - ./data:/app/data
+    - ./models:/app/models
+    - ./results:/app/results
+    - ./logs:/app/logs
+    - ./mlruns:/app/mlruns
+  networks:
+    - burnout-net
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Services
+# ─────────────────────────────────────────────────────────────────────────────
+services:
+
+  # ── Full pipeline (default) ────────────────────────────────────────────────
+  pipeline:
+    <<: *common
+    container_name: burnout-pipeline
+    command: pipeline
+    profiles: ["pipeline", "default"]
+
+  # ── Run individual stages on demand ───────────────────────────────────────
+  ingest:
+    <<: *common
+    container_name: burnout-ingest
+    command: ingest
+    profiles: ["ingest"]
+
+  preprocess:
+    <<: *common
+    container_name: burnout-preprocess
+    command: preprocess
+    profiles: ["preprocess"]
+
+  engineer:
+    <<: *common
+    container_name: burnout-engineer
+    command: engineer
+    profiles: ["engineer"]
+
+  train:
+    <<: *common
+    container_name: burnout-train
+    command: train
+    profiles: ["train"]
+
+  evaluate:
+    <<: *common
+    container_name: burnout-evaluate
+    command: evaluate
+    profiles: ["evaluate"]
+
+  visualize:
+    <<: *common
+    container_name: burnout-visualize
+    command: visualize
+    profiles: ["visualize"]
+
+  # ── Interactive prediction service ─────────────────────────────────────────
+  predict:
+    <<: *common
+    container_name: burnout-predict
+    command: predict
+    stdin_open: true   # allow interactive input
+    tty: true
+    profiles: ["predict"]
+    depends_on:
+      - pipeline
+
+  # ── JSON prediction (non-interactive) ─────────────────────────────────────
+  predict-json:
+    <<: *common
+    container_name: burnout-predict-json
+    command: predict-json
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MPLBACKEND=Agg
+      - MLFLOW_TRACKING_URI=/app/mlruns
+      # Override this at runtime:
+      # docker-compose run --rm predict-json -e PREDICT_INPUT='{"anxiety_level":18,...}'
+      - PREDICT_INPUT=${PREDICT_INPUT:-}
+    profiles: ["predict-json"]
+
+  # ── MLflow experiment tracking UI ─────────────────────────────────────────
+  mlflow:
+    <<: *common
+    container_name: burnout-mlflow
+    command: mlflow
+    ports:
+      - "5000:5000"
+    profiles: ["mlflow"]
+    restart: unless-stopped
+
+  # ── Test runner ────────────────────────────────────────────────────────────
+  test:
+    <<: *common
+    container_name: burnout-test
+    command: test
+    profiles: ["test"]
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Networking
+# ─────────────────────────────────────────────────────────────────────────────
+networks:
+  burnout-net:
+    driver: bridge

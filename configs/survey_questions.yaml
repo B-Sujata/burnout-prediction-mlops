@@ -1,0 +1,308 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# survey_questions.yaml
+# Maps every model feature to a plain-English question with labeled options.
+# The student sees the question + options. They never see a number.
+# Each option maps to a numeric value that the model understands.
+# ─────────────────────────────────────────────────────────────────────────────
+
+questions:
+
+  # ── Psychological ───────────────────────────────────────────────────────────
+
+  - id: anxiety_level
+    section: "🧠 Mind & Emotions"
+    question: "How often do you feel anxious, nervous, or on edge?"
+    options:
+      - label: "Rarely or never — I feel calm most of the time"
+        value: 2
+      - label: "Occasionally — maybe once or twice a week"
+        value: 7
+      - label: "Often — several times a week, it disrupts my day"
+        value: 13
+      - label: "Almost constantly — it's with me most of the time"
+        value: 18
+      - label: "All the time — I can barely focus or relax"
+        value: 21
+
+  - id: self_esteem
+    section: "🧠 Mind & Emotions"
+    question: "How do you generally feel about yourself and your abilities?"
+    options:
+      - label: "Very negatively — I often feel worthless or incapable"
+        value: 3
+      - label: "Somewhat negatively — I doubt myself a lot"
+        value: 9
+      - label: "Mixed — sometimes confident, sometimes not"
+        value: 15
+      - label: "Mostly positive — I believe in myself most of the time"
+        value: 22
+      - label: "Very confident — I have a strong, healthy sense of self"
+        value: 28
+
+  - id: mental_health_history
+    section: "🧠 Mind & Emotions"
+    question: "Have you ever been diagnosed with or treated for a mental health condition?"
+    options:
+      - label: "No — I have no history of mental health diagnosis or treatment"
+        value: 0
+      - label: "Yes — I have been diagnosed or have sought treatment before"
+        value: 1
+
+  - id: depression
+    section: "🧠 Mind & Emotions"
+    question: "Over the past few weeks, how often have you felt down, hopeless, or lost interest in things you used to enjoy?"
+    options:
+      - label: "Not at all — I feel engaged and hopeful"
+        value: 2
+      - label: "A little — some low days but generally okay"
+        value: 7
+      - label: "Moderately — noticeably affecting my motivation"
+        value: 13
+      - label: "Quite a bit — I struggle to find energy or joy"
+        value: 19
+      - label: "Severely — I feel hopeless or empty most of the time"
+        value: 25
+
+  # ── Physical ────────────────────────────────────────────────────────────────
+
+  - id: headache
+    section: "💪 Physical Health"
+    question: "How frequently do you get headaches or migraines?"
+    options:
+      - label: "Almost never"
+        value: 0
+      - label: "Once or twice a month"
+        value: 1
+      - label: "Once or twice a week"
+        value: 2
+      - label: "Several times a week"
+        value: 4
+      - label: "Daily or almost every day"
+        value: 5
+
+  - id: blood_pressure
+    section: "💪 Physical Health"
+    question: "What is your typical blood pressure status? (If unsure, go by how you usually feel physically)"
+    options:
+      - label: "Normal — no issues, I feel physically well"
+        value: 1
+      - label: "Slightly elevated — sometimes feel tense, flushed, or stressed physically"
+        value: 2
+      - label: "High — I have been told I have high blood pressure, or feel this often"
+        value: 3
+
+  - id: breathing_problem
+    section: "💪 Physical Health"
+    question: "How often do you experience breathing difficulties, chest tightness, or shortness of breath due to stress?"
+    options:
+      - label: "Never"
+        value: 0
+      - label: "Rarely — only in very stressful moments"
+        value: 1
+      - label: "Sometimes — a few times a week"
+        value: 2
+      - label: "Often — noticeable and concerning"
+        value: 4
+      - label: "Very frequently — it bothers me most days"
+        value: 5
+
+  # ── Lifestyle ───────────────────────────────────────────────────────────────
+
+  - id: sleep_quality
+    section: "😴 Sleep & Recovery"
+    question: "How would you describe your sleep quality over the past month?"
+    options:
+      - label: "Very poor — I barely sleep or wake up feeling exhausted"
+        value: 0
+      - label: "Poor — restless nights, rarely feel rested"
+        value: 1
+      - label: "Fair — some decent nights but inconsistent"
+        value: 2
+      - label: "Good — I usually sleep well and feel rested"
+        value: 4
+      - label: "Excellent — I consistently sleep well and wake refreshed"
+        value: 5
+
+  - id: extracurricular_activities
+    section: "😴 Sleep & Recovery"
+    question: "How involved are you in hobbies, sports, clubs, or activities outside of academics?"
+    options:
+      - label: "Not at all — I have no time or energy for anything outside studies"
+        value: 0
+      - label: "Very little — occasional activity but rarely"
+        value: 1
+      - label: "Somewhat — I participate in one activity now and then"
+        value: 2
+      - label: "Actively — I have regular hobbies or activities I enjoy"
+        value: 4
+      - label: "Very actively — rich life outside academics, multiple activities"
+        value: 5
+
+  # ── Environmental ───────────────────────────────────────────────────────────
+
+  - id: noise_level
+    section: "🏠 Environment"
+    question: "How noisy or disruptive is the environment where you study or live?"
+    options:
+      - label: "Very quiet — ideal study environment"
+        value: 0
+      - label: "Mostly quiet — occasional minor distractions"
+        value: 1
+      - label: "Moderate — some noise but manageable"
+        value: 2
+      - label: "Quite noisy — frequently interrupts my focus"
+        value: 4
+      - label: "Extremely noisy — I can barely concentrate"
+        value: 5
+
+  - id: living_conditions
+    section: "🏠 Environment"
+    question: "How would you rate your current living conditions (space, comfort, cleanliness)?"
+    options:
+      - label: "Very poor — cramped, uncomfortable, or unhygienic"
+        value: 0
+      - label: "Below average — has significant issues"
+        value: 1
+      - label: "Average — acceptable but not ideal"
+        value: 2
+      - label: "Good — comfortable and suits my needs"
+        value: 4
+      - label: "Excellent — I feel at home and at ease"
+        value: 5
+
+  - id: safety
+    section: "🏠 Environment"
+    question: "How safe do you feel in your living and study environment?"
+    options:
+      - label: "Very unsafe — I frequently feel threatened or at risk"
+        value: 0
+      - label: "Somewhat unsafe — occasional concerns"
+        value: 1
+      - label: "Neutral — neither safe nor unsafe"
+        value: 2
+      - label: "Mostly safe — I feel secure most of the time"
+        value: 4
+      - label: "Very safe — I have no concerns about my safety"
+        value: 5
+
+  - id: basic_needs
+    section: "🏠 Environment"
+    question: "How well are your basic needs met — food, shelter, finances, healthcare?"
+    options:
+      - label: "Struggling significantly — multiple needs unmet"
+        value: 0
+      - label: "Struggling with some needs — causes real stress"
+        value: 1
+      - label: "Managing — getting by but it's often tight"
+        value: 2
+      - label: "Mostly met — minor concerns occasionally"
+        value: 4
+      - label: "Fully met — I don't worry about basic needs"
+        value: 5
+
+  # ── Academic ────────────────────────────────────────────────────────────────
+
+  - id: academic_performance
+    section: "📚 Academic Life"
+    question: "How do you feel your academic performance has been recently?"
+    options:
+      - label: "Very poor — failing or significantly below expectations"
+        value: 0
+      - label: "Below average — struggling to keep up"
+        value: 1
+      - label: "Average — passing but not where I want to be"
+        value: 2
+      - label: "Good — meeting or slightly exceeding expectations"
+        value: 4
+      - label: "Excellent — performing at my best"
+        value: 5
+
+  - id: study_load
+    section: "📚 Academic Life"
+    question: "How would you describe your current academic workload?"
+    options:
+      - label: "Very light — I have plenty of free time"
+        value: 0
+      - label: "Light — manageable with little stress"
+        value: 1
+      - label: "Moderate — keeping me busy but balanced"
+        value: 2
+      - label: "Heavy — I struggle to keep up most days"
+        value: 4
+      - label: "Overwhelming — I feel buried and can't manage"
+        value: 5
+
+  - id: teacher_student_relationship
+    section: "📚 Academic Life"
+    question: "How would you describe your relationship with your teachers or professors?"
+    options:
+      - label: "Very poor — unsupportive, dismissive, or hostile"
+        value: 0
+      - label: "Poor — not very approachable or helpful"
+        value: 1
+      - label: "Neutral — professional but no real support"
+        value: 2
+      - label: "Good — they are helpful and I feel supported"
+        value: 4
+      - label: "Excellent — they actively support and inspire me"
+        value: 5
+
+  - id: future_career_concerns
+    section: "📚 Academic Life"
+    question: "How much are you worried about your future career or job prospects?"
+    options:
+      - label: "Not at all — I feel clear and confident about my future"
+        value: 0
+      - label: "A little — some uncertainty but not consuming"
+        value: 1
+      - label: "Moderately — it's on my mind and causes some stress"
+        value: 2
+      - label: "A lot — it's a significant source of daily anxiety"
+        value: 4
+      - label: "Extremely — I feel lost and very worried about my future"
+        value: 5
+
+  # ── Social ──────────────────────────────────────────────────────────────────
+
+  - id: social_support
+    section: "👥 Social Life"
+    question: "How supported do you feel by the people around you — friends, family, or peers?"
+    options:
+      - label: "No support — I feel very alone"
+        value: 0
+      - label: "Minimal support — people are around but don't really help"
+        value: 1
+      - label: "Moderate support — some people I can rely on"
+        value: 2
+      - label: "Strong support — I have people I can always turn to"
+        value: 3
+
+  - id: peer_pressure
+    section: "👥 Social Life"
+    question: "How much pressure do you feel from peers — to perform, fit in, or compete?"
+    options:
+      - label: "None — I don't feel pressured by peers"
+        value: 0
+      - label: "A little — minor pressure that doesn't bother me much"
+        value: 1
+      - label: "Some — I notice it and it affects me occasionally"
+        value: 2
+      - label: "Quite a bit — it affects my decisions and wellbeing"
+        value: 4
+      - label: "A lot — I feel constantly compared or judged by peers"
+        value: 5
+
+  - id: bullying
+    section: "👥 Social Life"
+    question: "Have you experienced bullying, harassment, or being treated poorly by others?"
+    options:
+      - label: "Not at all — I feel respected in my environment"
+        value: 0
+      - label: "Rarely — isolated incidents that weren't severe"
+        value: 1
+      - label: "Occasionally — it happens and it bothers me"
+        value: 2
+      - label: "Often — it's a real problem in my daily life"
+        value: 4
+      - label: "Frequently — it's seriously affecting my wellbeing"
+        value: 5

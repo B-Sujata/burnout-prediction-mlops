@@ -1,0 +1,81 @@
+stages:
+
+  data_ingestion:
+    cmd: python -c "from src.data.ingest_data import ingest_data; ingest_data()"
+    deps:
+      - src/data/ingest_data.py
+      - configs/config.yaml
+      - data/raw/student_data.csv
+    outs:
+      - data/raw/student_data.csv:
+          cache: false      # already exists — just validate
+
+  preprocess:
+    cmd: python -c "from src.data.preprocess_data import preprocess_data; preprocess_data()"
+    deps:
+      - src/data/preprocess_data.py
+      - data/raw/student_data.csv
+      - configs/config.yaml
+    outs:
+      - data/processed/processed_data.csv:
+          cache: true
+
+  feature_engineering:
+    cmd: python -c "from src.data.feature_engineering import engineer_features; engineer_features()"
+    deps:
+      - src/data/feature_engineering.py
+      - data/processed/processed_data.csv
+      - configs/config.yaml
+    params:
+      - params.yaml:
+          - base.random_seed
+    outs:
+      - data/processed/engineered_data.csv:
+          cache: true
+
+  train:
+    cmd: python -c "from src.models.train_model import train_all_models; train_all_models()"
+    deps:
+      - src/models/train_model.py
+      - data/processed/engineered_data.csv
+      - configs/config.yaml
+    params:
+      - params.yaml:
+          - base.random_seed
+          - base.test_size
+          - model.random_forest
+          - model.gradient_boosting
+    outs:
+      - models/:
+          cache: true
+
+  evaluate:
+    cmd: python -c "from src.models.evaluate_model import evaluate_model; evaluate_model()"
+    deps:
+      - src/models/evaluate_model.py
+      - models/
+      - data/processed/engineered_data.csv
+      - configs/config.yaml
+    metrics:
+      - results/evaluation_report.json:
+          cache: false
+
+  visualize:
+    cmd: python -c "from src.visualization.visualize_results import visualize_results; visualize_results()"
+    deps:
+      - src/visualization/visualize_results.py
+      - data/processed/engineered_data.csv
+      - models/
+      - results/metrics_summary.json
+      - configs/config.yaml
+    outs:
+      - results/burnout_distribution.png:
+          cache: false
+      - results/correlation_heatmap.png:
+          cache: false
+      - results/feature_importance.png:
+          cache: false
+      - results/model_comparison.png:
+          cache: false
+      - results/stress_level_validation.png:
+          cache: false

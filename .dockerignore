@@ -1,0 +1,69 @@
+# ── Python cache ──────────────────────────────────────────────────────────────
+
+**pycache**/ \*_/**pycache**/
+_.py[cod]
+_.pyo
+_.pyd
+.Python
+
+# ── Virtual environments ───────────────────────────────────────────────────────
+
+.venv/
+venv/
+env/
+ENV/
+.env
+
+# ── Git & DVC ─────────────────────────────────────────────────────────────────
+
+.git/
+.gitignore
+.dvc/cache/
+.dvc/tmp/
+\*.dvc
+
+# ── Jupyter notebooks ──────────────────────────────────────────────────────────
+
+notebooks/
+.ipynb_checkpoints/
+\*.ipynb
+
+# ── MLflow experiment runs (mounted as volume at runtime) ─────────────────────
+
+mlruns/
+
+# ── OS files ──────────────────────────────────────────────────────────────────
+
+.DS*Store
+Thumbs.db
+*.swp
+\_.swo
+
+# ── Logs (mounted as volume at runtime) ───────────────────────────────────────
+
+logs/
+
+# ── Test artefacts ─────────────────────────────────────────────────────────────
+
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# ── Documentation extras ──────────────────────────────────────────────────────
+
+\*.md
+!README.md
+
+# ── IDE ────────────────────────────────────────────────────────────────────────
+
+.vscode/
+.idea/
+
+# ── Large ML files (VERY IMPORTANT) ─────────────────────────────
+
+data/
+artifacts/
+_.pkl
+_.csv
+\*.parquet

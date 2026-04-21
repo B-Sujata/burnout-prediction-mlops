@@ -1,0 +1,86 @@
+advisor:
+  # LLM backend — "openai" or "anthropic"
+  provider: "openai"
+
+  # Model to use per provider
+  openai_model: "gpt-4o"
+  anthropic_model: "claude-sonnet-4-6"
+
+  # Generation settings
+  temperature: 0.7
+  max_tokens: 1024
+
+  # How many top stress drivers to surface in the prompt
+  top_stress_drivers: 3
+
+  # Whether to include a motivational closing paragraph
+  include_motivation: true
+
+  # System persona
+  persona: >
+    You are an expert student wellbeing counsellor and psychologist with 15 years
+    of experience helping university students overcome burnout, academic pressure,
+    and mental health challenges. You are warm, empathetic, non-judgmental, and
+    always solution-focused. You give specific, actionable advice tailored to the
+    student's exact situation — never generic platitudes.
+
+  # Feature display names for readable prompts
+  feature_labels:
+    anxiety_level: "Anxiety Level"
+    self_esteem: "Self Esteem"
+    mental_health_history: "Mental Health History"
+    depression: "Depression"
+    headache: "Headache Frequency"
+    blood_pressure: "Blood Pressure"
+    sleep_quality: "Sleep Quality"
+    breathing_problem: "Breathing Problems"
+    noise_level: "Environmental Noise"
+    living_conditions: "Living Conditions"
+    safety: "Sense of Safety"
+    basic_needs: "Basic Needs Met"
+    academic_performance: "Academic Performance"
+    study_load: "Study Load"
+    teacher_student_relationship: "Teacher Relationship Quality"
+    future_career_concerns: "Future Career Concerns"
+    social_support: "Social Support"
+    peer_pressure: "Peer Pressure"
+    extracurricular_activities: "Extracurricular Activities"
+    bullying: "Bullying Experienced"
+
+  # Features where LOWER value = MORE stress (inverted for driver detection)
+  inverted_features:
+    - self_esteem
+    - sleep_quality
+    - living_conditions
+    - safety
+    - basic_needs
+    - academic_performance
+    - teacher_student_relationship
+    - social_support
+    - extracurricular_activities
+
+  # Feature max values (for normalisation when finding drivers)
+  feature_max:
+    anxiety_level: 21
+    self_esteem: 30
+    mental_health_history: 1
+    depression: 27
+    headache: 5
+    blood_pressure: 3
+    sleep_quality: 5
+    breathing_problem: 5
+    noise_level: 5
+    living_conditions: 5
+    safety: 5
+    basic_needs: 5
+    academic_performance: 5
+    study_load: 5
+    teacher_student_relationship: 5
+    future_career_concerns: 5
+    social_support: 3
+    peer_pressure: 5
+    extracurricular_activities: 5
+    bullying: 5
+
+  feature_min:
+    blood_pressure: 1 # scale starts at 1, not 0

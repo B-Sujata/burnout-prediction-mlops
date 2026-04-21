@@ -1,0 +1,39 @@
+# Core data science
+numpy>=1.24.0
+pandas>=2.0.0
+scikit-learn>=1.3.0
+scipy>=1.11.0
+
+# Gradient boosting
+xgboost>=1.7.0
+
+# Visualization
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# MLOps
+mlflow>=2.8.0
+dvc>=3.0.0
+
+# Configuration
+pyyaml>=6.0
+
+# Utilities
+joblib>=1.3.0
+tqdm>=4.66.0
+
+# ── GenAI / LangChain ────────────────────────────────────────────────────────
+langchain>=0.3.0              # Core LangChain framework
+langchain-core>=0.3.0         # LCEL, prompt templates, base classes
+langchain-openai>=0.2.0       # OpenAI (GPT-4o) backend
+langchain-anthropic>=0.2.0    # Anthropic (Claude) backend
+
+# Development / testing
+pytest>=7.4.0
+pytest-cov>=4.1.0
+black>=23.0.0
+flake8>=6.1.0
+
+# Notebook support (optional)
+jupyter>=1.0.0
+ipykernel>=6.25.0

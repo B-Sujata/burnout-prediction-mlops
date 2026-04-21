@@ -1,0 +1,33 @@
+base:
+  random_seed: 42
+  test_size: 0.2
+
+data:
+  raw_path: data/raw/student_data.csv
+  processed_path: data/processed/processed_data.csv
+  engineered_path: data/processed/engineered_data.csv
+  source: "Kaggle — rxnach/student-stress-factors-a-comprehensive-analysis"
+
+model:
+  target: burnout_score
+  random_forest:
+    n_estimators: 150
+    max_depth: 12
+    random_state: 42
+  gradient_boosting:
+    n_estimators: 200
+    learning_rate: 0.05
+    max_depth: 5
+    random_state: 42
+  xgboost:
+    n_estimators: 200
+    learning_rate: 0.05
+    max_depth: 6
+    random_state: 42
+
+evaluate:
+  metrics:
+    - mae
+    - rmse
+    - r2
+    - cv_r2
