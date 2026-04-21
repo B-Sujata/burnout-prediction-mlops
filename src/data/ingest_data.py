@@ -31,9 +31,16 @@ def ingest_data(config_path: str = "configs/config.yaml") -> str:
 
         file_id = "1LhdZaDJAJQbFcIL9md3nk37WhGWOZb9H"
         url = f"https://drive.google.com/uc?id={file_id}"
+        
+        import os
+
+        cache_dir = os.path.expanduser("~/.cache/gdown")
+        os.makedirs(cache_dir, exist_ok=True)
+        
+        
 
         os.makedirs("data/raw", exist_ok=True)
-        gdown.download(url, raw_path, quiet=False)
+        gdown.download(url, raw_path, quiet=False, fuzzy=True)
 
     # ✅ LOAD DATA
     logger.info(f"Loading dataset from: {raw_path}")
