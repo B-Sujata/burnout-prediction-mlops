@@ -1,4 +1,6 @@
 [core]
-    remote = myremote
+    remote = gdrive
 ['remote "myremote"']
     url = ../dvc-storage
+['remote "gdrive"']
+    url = gdrive://root/burnout-dvc
