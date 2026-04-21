@@ -60,3 +60,7 @@ myenv/
 models/
 
 results/evaluation_report.json
+
+dvc-storage/
+
+data/raw/student_data.csv
