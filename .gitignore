@@ -58,3 +58,5 @@ Thumbs.db
 
 myenv/  
 models/
+
+results/evaluation_report.json
