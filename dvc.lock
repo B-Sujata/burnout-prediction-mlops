@@ -60,3 +60,110 @@ stages:
       hash: md5
       md5: 35875304e231160a0e599cc37b88965b
       size: 148693
+  train:
+    cmd: python -c "from src.models.train_model import train_all_models; 
+      train_all_models()"
+    deps:
+    - path: configs/config.yaml
+      hash: md5
+      md5: 045eb8a5f899a4d1f543816ad123e673
+      size: 2693
+    - path: data/processed/engineered_data.csv
+      hash: md5
+      md5: 35875304e231160a0e599cc37b88965b
+      size: 148693
+    - path: src/models/train_model.py
+      hash: md5
+      md5: 8b08cbbab8891ddf318cd3876c08886d
+      size: 7234
+    params:
+      params.yaml:
+        base.random_seed: 42
+        base.test_size: 0.2
+        model.gradient_boosting:
+          n_estimators: 200
+          learning_rate: 0.05
+          max_depth: 5
+          random_state: 42
+        model.random_forest:
+          n_estimators: 150
+          max_depth: 12
+          random_state: 42
+    outs:
+    - path: models/
+      hash: md5
+      md5: feeda2e0c3917f1219601c53fbc16602.dir
+      size: 6580991
+      nfiles: 6
+  evaluate:
+    cmd: python -c "from src.models.evaluate_model import evaluate_model; 
+      evaluate_model()"
+    deps:
+    - path: configs/config.yaml
+      hash: md5
+      md5: 045eb8a5f899a4d1f543816ad123e673
+      size: 2693
+    - path: data/processed/engineered_data.csv
+      hash: md5
+      md5: 35875304e231160a0e599cc37b88965b
+      size: 148693
+    - path: models/
+      hash: md5
+      md5: feeda2e0c3917f1219601c53fbc16602.dir
+      size: 6580991
+      nfiles: 6
+    - path: src/models/evaluate_model.py
+      hash: md5
+      md5: 2f0d6504c0a5dc94ba2928b84e1884c8
+      size: 3322
+    outs:
+    - path: results/evaluation_report.json
+      hash: md5
+      md5: 43a0de897ee000a41f38f4c90e2976a5
+      size: 564
+  visualize:
+    cmd: python -c "from src.visualization.visualize_results import 
+      visualize_results; visualize_results()"
+    deps:
+    - path: configs/config.yaml
+      hash: md5
+      md5: 045eb8a5f899a4d1f543816ad123e673
+      size: 2693
+    - path: data/processed/engineered_data.csv
+      hash: md5
+      md5: 35875304e231160a0e599cc37b88965b
+      size: 148693
+    - path: models/
+      hash: md5
+      md5: feeda2e0c3917f1219601c53fbc16602.dir
+      size: 6580991
+      nfiles: 6
+    - path: results/evaluation_report.json
+      hash: md5
+      md5: 43a0de897ee000a41f38f4c90e2976a5
+      size: 564
+    - path: src/visualization/visualize_results.py
+      hash: md5
+      md5: 4442a1ef0365b15457f6f57a572e6a6b
+      size: 9295
+    outs:
+    - path: results/burnout_distribution.png
+      hash: md5
+      md5: e603e0097d114c39f7f8ba4ec3c04c03
+      size: 90241
+    - path: results/correlation_heatmap.png
+      hash: md5
+      md5: d88bc84553d5d0b3a80b8de4b20b9f0f
+      size: 339523
+    - path: results/feature_importance.png
+      hash: md5
+      md5: a4effc7306becade8a8024dd95deabb8
+      size: 125927
+    - path: results/model_comparison.png
+      hash: md5
+      md5: d336a057d81303c83493bdff99499feb
+      size: 81306
+    - path: results/stress_level_validation.png
+      hash: md5
+      md5: 432506c392fbb03ec7c04278355a149e
+      size: 96426
