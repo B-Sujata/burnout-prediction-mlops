@@ -6,6 +6,17 @@ Loads the real StressLevelDataset (Kaggle) from data/raw/ and logs dataset info.
 import os, sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
+import os
+import urllib.request
+
+def download_data():
+    url = "YOUR_DATASET_LINK"
+    os.makedirs("data/raw", exist_ok=True)
+    urllib.request.urlretrieve(url, "data/raw/student_data.csv")
+
+if not os.path.exists("data/raw/student_data.csv"):
+    download_data()
+
 import pandas as pd
 from pathlib import Path
 from src.utils.logger import get_logger, log_separator
