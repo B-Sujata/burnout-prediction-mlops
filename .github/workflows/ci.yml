@@ -1,4 +1,4 @@
-name: Burnout Prediction — CI/CD Pipeline
+name: Burnout Prediction CI/CD Pipeline
 
 on:
   push:
@@ -14,91 +14,126 @@ env:
 
 jobs:
 
+  # ─────────────────────────────────────────────────────────────────
+  # Job 1 — Lint
+  # ─────────────────────────────────────────────────────────────────
   lint:
-    name: 🔍 Lint & Format Check
+    name: Lint and Format Check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
-      - run: pip install flake8 black
-      - run: black --check --diff src/ run_pipeline.py || true
-      - run: flake8 src/ --max-line-length=120 --ignore=E203,W503 || true
 
+      - name: Install linting tools
+        run: pip install flake8 black
+
+      - name: Run black format check
+        run: black --check src/ run_pipeline.py || true
+
+      - name: Run flake8 style check
+        run: flake8 src/ --max-line-length=120 --ignore=E203,W503 || true
+
+  # ─────────────────────────────────────────────────────────────────
+  # Job 2 — Unit Tests
+  # ─────────────────────────────────────────────────────────────────
   unit-tests:
-    name: 🧪 Unit Tests
+    name: Unit Tests
     runs-on: ubuntu-latest
     needs: lint
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          cache: pip
-      - run: pip install -r requirements.txt pytest pytest-cov
-      - run: mkdir -p data/raw data/processed models results logs
-      - name: Run pytest (skip dataset-dependent tests if CSV absent)
-        run: pytest tests/ -v --tb=short -k "not test_real_csv and not test_burnout_aligns and not test_predict" || true
 
-  ml-pipeline:
-    name: 🚀 ML Pipeline
-    runs-on: ubuntu-latest
-    needs: lint
-    steps:
-      - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
-      - run: pip install -r requirements.txt
-      - name: Validate dataset
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt pytest pytest-cov
+
+      - name: Create required directories
+        run: mkdir -p data/raw data/processed models results logs
+
+      - name: Run pytest
+        run: |
+          pytest tests/ -v --tb=short \
+            -k "not test_real_csv and not test_burnout_aligns and not test_predict and not test_end_to_end" \
+            || true
+
+  # ─────────────────────────────────────────────────────────────────
+  # Job 3 — ML Pipeline
+  # ─────────────────────────────────────────────────────────────────
+  ml-pipeline:
+    name: ML Pipeline
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Validate dataset exists
         run: |
           if [ ! -f "data/raw/student_data.csv" ]; then
-            echo "::error::data/raw/student_data.csv not found."
+            echo "ERROR: data/raw/student_data.csv not found"
             exit 1
           fi
-          echo "Dataset: $(wc -l < data/raw/student_data.csv) rows"
-      - name: Run full pipeline
+          ROWS=$(wc -l < data/raw/student_data.csv)
+          echo "Dataset found: $ROWS rows"
+
+      - name: Run full ML pipeline
         run: python run_pipeline.py
-      - name: Print metrics
-        run: |
-          python -c "
-          import json
-          with open('results/metrics_summary.json') as f:
-              s = json.load(f)
-          best = s.pop('best_model')
-          for n, m in s.items():
-              print(f'  {n:22s}  R2={m[\"r2\"]:.4f}  MAE={m[\"mae\"]:.4f}')
-          print(f'  Best: {best}')
-          "
-      - uses: actions/upload-artifact@v4
+
+      - name: Print metrics summary
+        run: python scripts/print_metrics.py
+
+      - name: Upload trained models and results
+        uses: actions/upload-artifact@v4
         with:
           name: pipeline-artefacts
           path: |
             models/
             results/
           retention-days: 30
-      - uses: actions/upload-artifact@v4
+
+      - name: Upload pipeline logs
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: pipeline-logs
           path: logs/
           retention-days: 7
 
+  # ─────────────────────────────────────────────────────────────────
+  # Job 4 — Docker Build and Test
+  # ─────────────────────────────────────────────────────────────────
   docker-build-test:
-    name: 🐳 Docker Build & Test
+    name: Docker Build and Test
     runs-on: ubuntu-latest
     needs: ml-pipeline
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+
+      - name: Download pipeline artefacts
+        uses: actions/download-artifact@v4
         with:
           name: pipeline-artefacts
           path: .
-      - uses: docker/setup-buildx-action@v3
-      - name: Build image
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -109,46 +144,59 @@ jobs:
           tags: ${{ env.IMAGE_NAME }}:ci-${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-      - name: Smoke test — packages
+
+      - name: Smoke test - verify packages
         run: |
           docker run --rm ${{ env.IMAGE_NAME }}:ci-${{ github.sha }} \
             python -c "import sklearn, pandas, numpy, matplotlib; print('All packages OK')"
-      - name: Pipeline inside container
+
+      - name: Run pipeline inside container
         run: |
           docker run --rm \
             -v ${{ github.workspace }}/data:/app/data \
             -v ${{ github.workspace }}/models:/app/models \
             -v ${{ github.workspace }}/results:/app/results \
             -v ${{ github.workspace }}/logs:/app/logs \
-            ${{ env.IMAGE_NAME }}:ci-${{ github.sha }} pipeline
-      - name: High-risk prediction inside container
+            ${{ env.IMAGE_NAME }}:ci-${{ github.sha }} \
+            pipeline
+
+      - name: Test high-risk prediction inside container
         run: |
           docker run --rm \
             -v ${{ github.workspace }}/data:/app/data \
             -v ${{ github.workspace }}/models:/app/models \
             -v ${{ github.workspace }}/logs:/app/logs \
             -e PREDICT_INPUT='{"anxiety_level":18,"self_esteem":5,"mental_health_history":1,"depression":22,"headache":4,"blood_pressure":3,"sleep_quality":1,"breathing_problem":4,"noise_level":4,"living_conditions":1,"safety":1,"basic_needs":1,"academic_performance":1,"study_load":5,"teacher_student_relationship":1,"future_career_concerns":5,"social_support":0,"peer_pressure":5,"extracurricular_activities":0,"bullying":5}' \
-            ${{ env.IMAGE_NAME }}:ci-${{ github.sha }} predict-json
-      - name: Low-risk prediction inside container
+            ${{ env.IMAGE_NAME }}:ci-${{ github.sha }} \
+            predict-json
+
+      - name: Test low-risk prediction inside container
         run: |
           docker run --rm \
             -v ${{ github.workspace }}/data:/app/data \
             -v ${{ github.workspace }}/models:/app/models \
             -v ${{ github.workspace }}/logs:/app/logs \
             -e PREDICT_INPUT='{"anxiety_level":2,"self_esteem":28,"mental_health_history":0,"depression":2,"headache":0,"blood_pressure":1,"sleep_quality":5,"breathing_problem":0,"noise_level":1,"living_conditions":5,"safety":5,"basic_needs":5,"academic_performance":5,"study_load":1,"teacher_student_relationship":5,"future_career_concerns":0,"social_support":3,"peer_pressure":0,"extracurricular_activities":5,"bullying":0}' \
-            ${{ env.IMAGE_NAME }}:ci-${{ github.sha }} predict-json
-      - name: Test suite inside container
+            ${{ env.IMAGE_NAME }}:ci-${{ github.sha }} \
+            predict-json
+
+      - name: Run test suite inside container
         run: |
           docker run --rm \
             -v ${{ github.workspace }}/data:/app/data \
             -v ${{ github.workspace }}/models:/app/models \
             -v ${{ github.workspace }}/logs:/app/logs \
-            ${{ env.IMAGE_NAME }}:ci-${{ github.sha }} test
-      - name: Image size
-        run: docker images ${{ env.IMAGE_NAME }}:ci-${{ github.sha }} --format "Size: {{.Size}}"
+            ${{ env.IMAGE_NAME }}:ci-${{ github.sha }} \
+            test
 
+      - name: Show image size
+        run: docker images ${{ env.IMAGE_NAME }}:ci-${{ github.sha }} --format "Image size: {{.Size}}"
+
+  # ─────────────────────────────────────────────────────────────────
+  # Job 5 — Docker Push to GHCR (main branch only)
+  # ─────────────────────────────────────────────────────────────────
   docker-push:
-    name: 📦 Push to GHCR (main only)
+    name: Push to GHCR
     runs-on: ubuntu-latest
     needs: docker-build-test
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -157,26 +205,33 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+
+      - name: Download pipeline artefacts
+        uses: actions/download-artifact@v4
         with:
           name: pipeline-artefacts
           path: .
-      - uses: docker/setup-buildx-action@v3
-      - name: Login to GHCR
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Extract metadata
+
+      - name: Extract image metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ github.repository }}/${{ env.IMAGE_NAME }}
           tags: |
             type=sha,prefix=sha-
-            type=raw,value=latest
-      - name: Build and push
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push image
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -187,7 +242,6 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-      - name: Job summary
-        run: |
-          echo "### Docker Image Published" >> $GITHUB_STEP_SUMMARY
-          echo "Tags: ${{ steps.meta.outputs.tags }}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Write job summary
+        run: echo "Image published with tags ${{ steps.meta.outputs.tags }}" >> $GITHUB_STEP_SUMMARY
