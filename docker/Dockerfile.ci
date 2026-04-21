@@ -1,12 +1,15 @@
-# ─────────────────────────────────────────────────────────────────────────────
-# Dockerfile.ci — Optimised for GitHub Actions CI/CD
-# Single stage, no non-root user switch, faster cold builds.
-# ─────────────────────────────────────────────────────────────────────────────
 FROM python:3.10-slim
 
 WORKDIR /app
+
+# Copy requirements first (better caching)
+COPY requirements.txt .
+
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Copy full project
 COPY . .
-RUN mkdir -p /app/logs && chmod -R 777 /app/logs
 
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -17,13 +20,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential gcc \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
-RUN pip install --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+# Create all required folders
+RUN mkdir -p /app/data/raw /app/data/processed /app/models /app/results /app/logs
 
-COPY . .
-
-RUN mkdir -p data/raw data/processed models results logs
+# 🔥 CRITICAL: FINAL permissions (must be last)
+RUN chmod -R 777 /app/logs
 
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
