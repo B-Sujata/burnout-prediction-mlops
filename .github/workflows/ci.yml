@@ -1,172 +1,85 @@
-name: Burnout Prediction CI/CD Pipeline
+name: CI Pipeline
 
 on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main]
-  workflow_dispatch:
-
-env:
-  PYTHON_VERSION: "3.10"
-  IMAGE_NAME: burnout-prediction
+push:
+branches:
+- main
 
 jobs:
-  lint:
-    name: Lint and Format Check
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+lint:
+name: Lint
+runs-on: ubuntu-latest
+steps:
+- name: Checkout code
+uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
+```
+  - name: Setup Python
+    uses: actions/setup-python@v5
+    with:
+      python-version: "3.10"
 
-      - name: Install linting tools
-        run: pip install flake8 black
+  - name: Install flake8
+    run: pip install flake8
 
-      - name: Run black
-        run: black --check src/ run_pipeline.py || true
+  - name: Run lint
+    run: flake8 .
+```
 
-      - name: Run flake8
-        run: flake8 src/ --max-line-length=120 --ignore=E203,W503 || true
+test:
+name: Unit Tests
+runs-on: ubuntu-latest
+needs: lint
+steps:
+- name: Checkout code
+uses: actions/checkout@v4
 
-  unit-tests:
-    name: Unit Tests
-    runs-on: ubuntu-latest
-    needs: lint
-    steps:
-      - uses: actions/checkout@v4
+```
+  - name: Setup Python
+    uses: actions/setup-python@v5
+    with:
+      python-version: "3.10"
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
+  - name: Install dependencies
+    run: pip install -r requirements.txt
 
-      - name: Install dependencies
-        run: pip install -r requirements.txt pytest
+  - name: Run tests
+    run: pytest
+```
 
-      - name: Create directories
-        run: mkdir -p data/raw data/processed models results logs
+ml-pipeline:
+name: ML Pipeline
+runs-on: ubuntu-latest
+needs: test
+steps:
+- name: Checkout code
+uses: actions/checkout@v4
 
-      - name: Run tests
-        run: pytest tests/ -v --tb=short -k "not test_real_csv and not test_burnout_aligns and not test_predict and not test_end_to_end" || true
+```
+  - name: Setup Python
+    uses: actions/setup-python@v5
+    with:
+      python-version: "3.10"
 
-  ml-pipeline:
-    name: ML Pipeline
-    runs-on: ubuntu-latest
-    needs: lint
-    steps:
-      - uses: actions/checkout@v4
+  - name: Install dependencies
+    run: pip install -r requirements.txt
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
+  - name: Run pipeline
+    run: python run_pipeline.py
+```
 
-      - name: Install dependencies
-        run: pip install -r requirements.txt
+docker:
+name: Docker Build and Test
+runs-on: ubuntu-latest
+needs: ml-pipeline
+steps:
+- name: Checkout code
+uses: actions/checkout@v4
 
-      - name: Check dataset
-        run: |
-          if [ ! -f "data/raw/student_data.csv" ]; then
-            echo "ERROR: dataset not found"
-            exit 1
-          fi
-          echo "Dataset rows: $(wc -l < data/raw/student_data.csv)"
+```
+  - name: Build Docker image (no cache)
+    run: docker build --no-cache -t burnout-prediction -f docker/Dockerfile.ci .
 
-      - name: Run pipeline
-        run: python run_pipeline.py
-
-      - name: Print metrics
-        run: python scripts/print_metrics.py
-
-      - name: Upload models and results
-        uses: actions/upload-artifact@v4
-        with:
-          name: pipeline-artifacts
-          path: |
-            models/
-            results/
-          retention-days: 7
-
-      - name: Upload logs
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: pipeline-logs
-          path: logs/
-          retention-days: 3
-
-  docker-build-test:
-    name: Docker Build and Test
-    runs-on: ubuntu-latest
-    needs: ml-pipeline
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: pipeline-artifacts
-          path: .
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./Dockerfile
-          target: runtime
-          push: false
-          load: true
-          tags: ${{ env.IMAGE_NAME }}:ci-${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Smoke test
-        run: |
-          docker run --rm ${{ env.IMAGE_NAME }}:ci-${{ github.sha }} \
-            python -c "import sklearn, pandas, numpy; print('OK')"
-
-      - name: Run pipeline in container
-        run: |
-          docker run --rm \
-            -v ${{ github.workspace }}/data:/app/data \
-            -v ${{ github.workspace }}/models:/app/models \
-            -v ${{ github.workspace }}/results:/app/results \
-            -v ${{ github.workspace }}/logs:/app/logs \
-            ${{ env.IMAGE_NAME }}:ci-${{ github.sha }} \
-            pipeline
-
-      - name: Test high-risk prediction
-        run: |
-          docker run --rm \
-            -v ${{ github.workspace }}/data:/app/data \
-            -v ${{ github.workspace }}/models:/app/models \
-            -v ${{ github.workspace }}/logs:/app/logs \
-            -e PREDICT_INPUT='{"anxiety_level":18,"self_esteem":5,"mental_health_history":1,"depression":22,"headache":4,"blood_pressure":3,"sleep_quality":1,"breathing_problem":4,"noise_level":4,"living_conditions":1,"safety":1,"basic_needs":1,"academic_performance":1,"study_load":5,"teacher_student_relationship":1,"future_career_concerns":5,"social_support":0,"peer_pressure":5,"extracurricular_activities":0,"bullying":5}' \
-            ${{ env.IMAGE_NAME }}:ci-${{ github.sha }} \
-            predict-json
-
-      - name: Test low-risk prediction
-        run: |
-          docker run --rm \
-            -v ${{ github.workspace }}/data:/app/data \
-            -v ${{ github.workspace }}/models:/app/models \
-            -v ${{ github.workspace }}/logs:/app/logs \
-            -e PREDICT_INPUT='{"anxiety_level":2,"self_esteem":28,"mental_health_history":0,"depression":2,"headache":0,"blood_pressure":1,"sleep_quality":5,"breathing_problem":0,"noise_level":1,"living_conditions":5,"safety":5,"basic_needs":5,"academic_performance":5,"study_load":1,"teacher_student_relationship":5,"future_career_concerns":0,"social_support":3,"peer_pressure":0,"extracurricular_activities":5,"bullying":0}' \
-            ${{ env.IMAGE_NAME }}:ci-${{ github.sha }} \
-            predict-json
-
-      - name: Run tests in container
-        run: |
-          docker run --rm \
-            -v ${{ github.workspace }}/data:/app/data \
-            -v ${{ github.workspace }}/models:/app/models \
-            -v ${{ github.workspace }}/logs:/app/logs \
-            ${{ env.IMAGE_NAME }}:ci-${{ github.sha }} \
-            test
-
-      - name: Show image size
-        run: docker images ${{ env.IMAGE_NAME }}:ci-${{ github.sha }}
+  - name: Run container
+    run: docker run --rm burnout-prediction
+```
